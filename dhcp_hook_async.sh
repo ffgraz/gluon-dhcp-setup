@@ -13,15 +13,32 @@ ssh_host() {
   PASS="$1"
   USER="$2"
   shift 2
-  sshpass -p "$PASS" ssh -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no "$USER@$IP" "$@"
+  sshpass -p "$PASS" ssh -o "ControlMaster=no" -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no "$USER@$IP" "$@"
+}
+
+ssh_openwrt() {
+  ex=255
+  count=0
+  if [ $ex -eq 255 ]; then
+    set +e
+    ssh_host "" root "$@" ; ex=$?
+    set -e
+
+    count=$(( $count + 1 ))
+    if [ $count -gt 5 ]; then
+      return $ex
+    fi
+  fi
+
+  return $ex
 }
 
 ssh_host_openwrt() {
-  ssh_host "" root "$@" &>/dev/null
+  ssh_openwrt "$@" &>/dev/null
 }
 
 ssh_host_openwrt_out() {
-  ssh_host "" root "$@" 2> >(grep -v "Warning: Permanently added" >&2)
+  ssh_openwrt "$@" 2> >(grep -v "Warning: Permanently added" >&2)
 }
 
 post() {

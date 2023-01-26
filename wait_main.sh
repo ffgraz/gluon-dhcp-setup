@@ -9,7 +9,7 @@ E() {
 }
 
 ssh_cmd() {
-  ssh -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no root@192.168.1.1 "$@" 2> >(grep -v "Warning: Permanently added" >&2)
+  ssh -o "ControlMaster=no" -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no root@192.168.1.1 "$@" 2> >(grep -v "Warning: Permanently added" >&2)
 }
 
 post() {
