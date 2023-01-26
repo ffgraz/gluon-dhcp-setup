@@ -5,5 +5,5 @@
 # Usage
 
 ```sh
-sudo bash run.sh INTERFACE
+sudo bash run.sh INTERFACE [<CHANNEL>]
 ```

@@ -1,6 +1,11 @@
 #!/bin/bash
 
 export IFNAME="$1"
+if [ -z "$2" ]; then
+  export CHANNEL=experimental
+else
+  export CHANNEL="$2"
+fi
 export USER=$SUDO_USER
 
 nmcli d d "$IFNAME"

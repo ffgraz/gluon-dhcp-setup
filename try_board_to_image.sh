@@ -1,6 +1,9 @@
 #!/bin/bash
 
-channel="experimental"
+channel="$CHANNEL"
+if [ -z "$channel" ]; then
+  channel="experimental"
+fi
 
 EQUALS=""
 

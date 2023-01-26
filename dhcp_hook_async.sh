@@ -97,7 +97,7 @@ if ssh_host_openwrt; then
 
       BOARD_NAME=$(ssh_host_openwrt_out cat /tmp/sysinfo/board_name)
 
-      E GLUON: resolving image for "$BOARD_NAME"
+      E GLUON: resolving image for "$BOARD_NAME" channel "$CHANNEL"
 
       URL=$(bash try_board_to_image.sh "$BOARD_NAME")
 
@@ -127,7 +127,7 @@ if ssh_host_openwrt; then
 
       E "$TYPE" AP: executing sysupgrade
 
-      ssh_host_openwrt sysupgrade -n -v /tmp/$BASE || true
+      ssh_host_openwrt -t sysupgrade -n -v /tmp/$BASE || true
 
       E "$TYPE" AP: rebooting into config mode
 
