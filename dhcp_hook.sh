@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec ./dhcp_hook_async.sh $@ &
+exec ./dhcp_hook_async.sh "$@" &
