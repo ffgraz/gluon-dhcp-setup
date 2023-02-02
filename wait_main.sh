@@ -9,7 +9,7 @@ E() {
 }
 
 ssh_cmd() {
-  ssh -o "ControlMaster=no" -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no root@192.168.1.1 "$@" 2> >(grep -v "Warning: Permanently added" >&2)
+  ssh -o "ControlMaster=no" -o "ControlPath=none" -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no root@192.168.1.1 "$@" 2> >(grep -v "Warning: Permanently added" >&2)
 }
 
 post() {
@@ -23,7 +23,7 @@ while sleep 5s; do
     # E MAIN "Probing 192.168.1.1"
     true
 
-    if timeout 3 ssh -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no root@192.168.1.1 &>/dev/null; then
+    if cat /dev/null | timeout 3 ssh -o "ControlMaster=no" -o "ControlPath=none" -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no root@192.168.1.1 &>/dev/null; then
       MAC=$(post get-mac-vanilla)
 
       E MAIN "Switch to DHCP"

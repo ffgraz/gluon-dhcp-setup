@@ -5,6 +5,10 @@ set -euo pipefail
 IP=$2
 MAC=$3
 
+faketty () {
+  script -qefc "$(printf "%q " "$@")" /dev/null
+}
+
 E() {
   echo $(tput bold)\# $MAC $IP $@$(tput sgr0)
 }
@@ -13,7 +17,16 @@ ssh_host() {
   PASS="$1"
   USER="$2"
   shift 2
-  sshpass -p "$PASS" ssh -o "ControlMaster=no" -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no "$USER@$IP" "$@"
+
+  PRECMD=()
+
+  if [ -v FAKETTY ]; then
+    PRECMD+=(faketty)
+  fi
+
+  PRECMD+=(sshpass -p "$PASS")
+
+  "${PRECMD[@]}" ssh -o "ControlPath=none" -o "ControlMaster=no" -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no "$USER@$IP" "$@"
 }
 
 ssh_openwrt() {
@@ -70,23 +83,7 @@ fi
 
 sleep 1
 
-dowait() {
-  (post wait &>/dev/null) & pid=$!
-
-  timeout=0
-
-  while [ -e "/proc/$pid" ]; do
-    sleep 1s
-
-    timeout=$(( $timeout + 1 ))
-
-    if [ $timeout -gt 5 ]; then
-      return 1
-    fi
-  done
-}
-
-if ssh_host_openwrt; then
+if ping -c1 -w1 192.168.1.1 &>/dev/null && cat /dev/null | ssh_host_openwrt; then
   TYPEACTION=($(post get-type))
   TYPE="${TYPEACTION[0]}"
   ACTION="${TYPEACTION[1]}"
@@ -121,13 +118,13 @@ if ssh_host_openwrt; then
 
       popd >/dev/null
 
-      while ! dowait; do
-        true
-      done
+      set +e
+      post wait
+      set -e
 
       E "$TYPE" AP: executing sysupgrade
 
-      ssh_host_openwrt -t sysupgrade -n -v /tmp/$BASE || true
+      echo "sysupgrade -n -v /tmp/$BASE" | ssh_host_openwrt_out -t sh -l - || true
 
       E "$TYPE" AP: rebooting into config mode
 
@@ -136,13 +133,19 @@ if ssh_host_openwrt; then
     setup)
       E "$TYPE" AP wait
 
-      while ! dowait; do
-        true
-      done
+      set +e
+      post wait
+      set -e
 
       E "$TYPE" AP "Configure gluon"
 
-      post set-name
+      if [ -e post/custom.sh ]; then
+        E "$TYPE" AP "Using custom script"
+
+        post custom
+      else
+        post set-name
+      fi
 
       if ! [ -v GLUON_NO_SKIP ]; then
         post configure-gluon-skip
