@@ -59,7 +59,7 @@ post() {
 }
 
 scp_file() {
-  sshpass -p "$1" scp -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no $3 "$4" "$2"@$IP:/"$5" &>/dev/null
+  sshpass -p "$1" scp -o "ControlPath=none" -o "ControlMaster=no" -o "UserKnownHostsFile=/dev/null" -o StrictHostKeyChecking=no $3 "$4" "$2"@$IP:/"$5" &>/dev/null
 
   if [ $? -ne 0 ]; then
     E "failed to upload file" $3
@@ -83,7 +83,7 @@ fi
 
 sleep 1
 
-if ping -c1 -w1 192.168.1.1 &>/dev/null && cat /dev/null | ssh_host_openwrt; then
+if cat /dev/null | ssh_host_openwrt; then
   TYPEACTION=($(post get-type))
   TYPE="${TYPEACTION[0]}"
   ACTION="${TYPEACTION[1]}"
