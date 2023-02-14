@@ -2,7 +2,7 @@
 
 export IFNAME="$1"
 if [ -z "$2" ]; then
-  export CHANNEL=experimental
+  export CHANNEL=beta
 else
   export CHANNEL="$2"
 fi
